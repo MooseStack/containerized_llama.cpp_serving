@@ -1,23 +1,23 @@
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
-  name: llamacpp-nvidia
+  name: llamacpp-cpu-x86-64
   labels:
     opendatahub.io/dashboard: "true"   # makes it show up in the Open Data Hub / OpenShift AI dashboard
   annotations:
-    opendatahub.io/recommended-accelerator: "[nvidia.com/gpu]"  # marks it as recommended for Nvidia GPUs
-    opendatahub.io/display-name: "llama.cpp (Nvidia GPU)"  # display name in the dropdown
+    opendatahub.io/runtime-version: v0.1.0
+    opendatahub.io/display-name: "llama.cpp (x86_64 CPU)"  # display name in the dropdown
     opendatahub.io/serving-runtime-scope: global  # makes it available in all namespaces
-    opendatahub.io/apiProtcol: REST # options are gRPC or REST
+    opendatahub.io/apiProtocol: REST # options are gRPC or REST
 spec:
   supportedModelFormats:
-    - name: llama.cpp - gguf
+    - name: "GGUF - GPT-Generated Unified Format"
       version: "latest"
       autoSelect: true
   multiModel: false #only display for single model server mode
   containers:
     - name: kserve-container
-      image: ghcr.io/ggerganov/llama.cpp:latest-cuda
+      image: ghcr.io/ggml-org/llama.cpp:server-b8067
       command:
         - "/bin/sh" # use /bin/sh -c to expand *.gguf
         - "-c"
@@ -25,10 +25,8 @@ spec:
         - '--' #required placeholder to separate command and args
       args:
         # args separated per line due to $@ shell variable usage
-        - --n-gpu-layers
-        - 999
-        - --port
-        - 8080
+        - "--port"
+        - "8080"
       ports:
         - containerPort: 8080
           protocol: TCP
